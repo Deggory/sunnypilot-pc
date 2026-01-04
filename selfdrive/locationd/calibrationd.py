@@ -271,7 +271,7 @@ def main() -> NoReturn:
   calibrator.not_car = CP.notCar
 
   while 1:
-    timeout = 0 if sm.frame == -1 else 100
+    timeout = 0 if sm.frame == -1 else 200
     sm.update(timeout)
 
     if sm.updated['cameraOdometry']:
