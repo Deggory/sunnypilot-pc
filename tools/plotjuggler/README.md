@@ -75,3 +75,22 @@ Use this layout to improve your car's tuning and generate plots for tuning PRs. 
 
 
 ![screenshot](https://i.imgur.com/cizHCH3.png)
+
+## 播放本地的segment
+
+```bash
+cd sunnypilot-pc
+source .venv/bin/active
+cd tools/plotjuggler/
+
+./juggle.py "a2a0ccea32023010/目录名前半段" "路径" 片段/目录名后缀
+
+# 打开目录下除后缀，名称一样的所有文件夹的数据(文件夹后缀从0开始)
+./juggle.py "a2a0ccea32023010/00000042--7e8554b795" "/Users/mx/Downloads/sp_data"
+
+# 打开特定某一段的数据（后缀）（文件夹不必从0开始）
+./juggle.py "a2a0ccea32023010/00000042--7e8554b795" "/Users/mx/Downloads/sp_data" 10
+
+# 使用预置的layout，例如查看cpu使用情况
+./juggle.py "a2a0ccea32023010/00000042--7e8554b795" "/Users/mx/Downloads/sp_data" 10 --layout=layouts/system_lag_debug.xml
+```
