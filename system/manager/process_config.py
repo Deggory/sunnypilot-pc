@@ -94,15 +94,15 @@ def and_(*fns):
 procs = [
   DaemonProcess("manage_athenad", "system.athena.manage_athenad", "AthenadPid"),
 
-  NativeProcess("loggerd", "system/loggerd", ["./loggerd"], logging),
-  NativeProcess("encoderd", "system/loggerd", ["./encoderd"], only_onroad, enabled=not PC),
-  NativeProcess("stream_encoderd", "system/loggerd", ["./encoderd", "--stream"], notcar),
-  PythonProcess("logmessaged", "system.logmessaged", always_run),
+  NativeProcess("loggerd", "system/loggerd", ["./loggerd"], logging, enabled=False),
+  NativeProcess("encoderd", "system/loggerd", ["./encoderd"], only_onroad, enabled=False),
+  NativeProcess("stream_encoderd", "system/loggerd", ["./encoderd", "--stream"], notcar, enabled=False),
+  PythonProcess("logmessaged", "system.logmessaged", always_run, enabled=False),
 
   NativeProcess("camerad", "system/camerad", ["./camerad"], driverview, enabled=not WEBCAM),
   PythonProcess("webcamerad", "tools.webcam.camerad", driverview, enabled=WEBCAM),
-  NativeProcess("logcatd", "system/logcatd", ["./logcatd"], only_onroad),
-  NativeProcess("proclogd", "system/proclogd", ["./proclogd"], only_onroad),
+  NativeProcess("logcatd", "system/logcatd", ["./logcatd"], only_onroad, enabled=False),
+  NativeProcess("proclogd", "system/proclogd", ["./proclogd"], only_onroad, enabled=False),
   PythonProcess("micd", "system.micd", iscar, enabled=not PC),
   PythonProcess("timed", "system.timed", always_run, enabled=not PC),
 
@@ -120,7 +120,7 @@ procs = [
   PythonProcess("joystickd", "tools.joystick.joystickd", or_(joystick, notcar)),
   PythonProcess("selfdrived", "selfdrive.selfdrived.selfdrived", only_onroad),
   PythonProcess("card", "selfdrive.car.card", only_onroad),
-  PythonProcess("deleter", "system.loggerd.deleter", always_run),
+  PythonProcess("deleter", "system.loggerd.deleter", always_run, enabled=False),
   PythonProcess("dmonitoringd", "selfdrive.monitoring.dmonitoringd", driverview, enabled=(not NO_DM)),
   PythonProcess("qcomgpsd", "system.qcomgpsd.qcomgpsd", qcomgps, enabled=TICI),
   PythonProcess("pandad", "selfdrive.pandad.pandad", always_run),
