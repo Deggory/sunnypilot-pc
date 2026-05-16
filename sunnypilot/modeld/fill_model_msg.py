@@ -1,3 +1,4 @@
+import time
 import os
 import capnp
 import numpy as np
@@ -86,6 +87,10 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
   modelV2.frameDropPerc = frame_drop_perc
   modelV2.timestampEof = timestamp_eof
   modelV2.modelExecutionTime = model_execution_time
+  # Calculate total end-to-end latency from frame capture (timestamp_eof) to output publish
+  timestamp_eof_sec = timestamp_eof / 1e9
+  total_latency_ms = (time.time() - timestamp_eof_sec) * 1000.0
+  modelV2.totalLatencyMs = total_latency_ms
 
   # plan
   position = modelV2.position
