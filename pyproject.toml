@@ -9,6 +9,9 @@ authors = [
 ]
 
 dependencies = [
+  # Orange Pi 5 RK3588 NPU
+  "rknn-toolkit-lite2",
+
   # multiple users
   "sounddevice",  # micd + soundd
   "pyserial",     # pigeond + qcomgpsd
