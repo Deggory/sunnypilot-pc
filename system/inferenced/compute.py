@@ -29,7 +29,7 @@ class ModelConfig:
     path: str
     input_shapes: dict[str, tuple[int, ...]]
     output_shapes: dict[str, tuple[int, ...]]
-    npu_cores: int = 0
+    npu_cores: str = "0"
 
 
 @dataclass
@@ -43,27 +43,18 @@ class NPUBackend:
     def __init__(self):
         self.models: dict[str, dict] = {}
 
-
-    def _core_str(self, core_idx: int) -> str:
-        # Map int to string for use_npu_cores param
-        if core_idx == 1:
-            return "1"
-        if core_idx == 2:
-            return "2"
-        return "0"
-
     def load_model(self, config: ModelConfig) -> bool:
         if not HAS_RKNN:
             cloudlog.error(f"HAL backend unavailable: rknnlite import failed: {_RKNN_IMPORT_ERR}")
             return False
 
         try:
-            runner = RKNNRunner(config.path, use_npu_cores=self._core_str(config.npu_cores))
+            runner = RKNNRunner(config.path, use_npu_cores=config.npu_cores)
             self.models[config.name] = {
                 "runner": runner,
                 "input_names": list(config.input_shapes.keys()),
             }
-            cloudlog.warning(f"HAL loaded {config.name} on NPU core(s) {self._core_str(config.npu_cores)}")
+            cloudlog.warning(f"HAL loaded {config.name} on NPU core(s) {config.npu_cores}")
             return True
         except Exception as e:
             cloudlog.exception(f"HAL failed loading {config.name}: {e}")

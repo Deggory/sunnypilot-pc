@@ -137,14 +137,14 @@ class ModelState:
       path=str(VISION_RKNN_PATH),
       input_shapes=self.vision_input_shapes,
       output_shapes={"outputs": (1, self.vision_output_size)},
-      npu_cores=0,
+      npu_cores="0,1",
     )
     policy_cfg = ModelConfig(
       name="driving_policy",
       path=str(POLICY_RKNN_PATH),
       input_shapes=self.policy_input_shapes,
       output_shapes={"outputs": (1, self.policy_output_size)},
-      npu_cores=1,
+      npu_cores="2",
     )
 
     if not self.npu.load_model(vision_cfg):
