@@ -138,7 +138,8 @@ def main(demo=False):
   sentry.set_tag("daemon", PROCESS_NAME)
   cloudlog.bind(daemon=PROCESS_NAME)
   setproctitle(PROCESS_NAME)
-  config_realtime_process(7, 54)
+  # Pin to A76 big cores (0-3) for lowest latency inference
+  config_realtime_process([0, 1, 2, 3], 54)
 
   cloudlog.warning("setting up CL context")
   cl_context = CLContext()

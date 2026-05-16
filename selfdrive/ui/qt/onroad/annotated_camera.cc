@@ -1,4 +1,3 @@
-
 #include "selfdrive/ui/qt/onroad/annotated_camera.h"
 
 #include <QPainter>
@@ -134,6 +133,18 @@ void AnnotatedCameraWidget::paintGL() {
   hud.updateState(*s);
   hud.draw(painter, rect());
 
+  if (sm.rcv_frame("modelV2") > 0) {
+    const float model_ms = sm["modelV2"].getModelV2().getModelExecutionTime() * 1000.0f;
+    const QString timing = QString("NPU %1 ms").arg(model_ms, 0, 'f', 1);
+
+    painter.setPen(Qt::white);
+    QFont font = InterFont(42, QFont::DemiBold);
+    painter.setFont(font);
+    const QRect text_rect(width() - 340, UI_BORDER_SIZE + 24, 300, 56);
+    painter.drawText(text_rect, Qt::AlignRight | Qt::AlignVCenter, timing);
+    painter.setPen(Qt::NoPen);
+  }
+
   double cur_draw_t = millis_since_boot();
   double dt = cur_draw_t - prev_draw_t;
   double fps = fps_filter.update(1. / dt * 1000);
@@ -141,6 +152,23 @@ void AnnotatedCameraWidget::paintGL() {
     LOGW("slow frame rate: %.2f fps", fps);
   }
   prev_draw_t = cur_draw_t;
+
+  // Display NPU inference latency (camera capture → model output) in top-right corner
+  if (sm->updated("modelV2")) {
+    auto modelV2 = (*sm)["modelV2"].getModelV2();
+    float total_latency_ms = modelV2.getTotalLatencyMs();
+    float drop_pct = modelV2.getFrameDropPerc();
+
+    QString npu_text = QString("%1ms | Drop: %2%")
+                         .arg(total_latency_ms, 0, 'f', 1)
+                         .arg(drop_pct, 0, 'f', 1);
+
+    painter.save();
+    painter.setPen(QColor(255, 0, 0, 220));  // Red for inference timing
+    painter.setFont(QFont("Inter", 14, QFont::Bold)); // Smaller font size
+    painter.drawText(rect().adjusted(0, 10, -10, 0), Qt::AlignTop | Qt::AlignRight, npu_text);
+    painter.restore();
+  }
 
   // publish debug msg
   MessageBuilder msg;

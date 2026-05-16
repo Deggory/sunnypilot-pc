@@ -1056,6 +1056,7 @@ struct ModelDataV2 {
   frameDropPerc @2 :Float32;
   timestampEof @3 :UInt64;
   modelExecutionTime @15 :Float32;
+  totalLatencyMs @27 :Float32;  # Total end-to-end latency: camera capture to model output (ms)
   rawPredictions @16 :Data;
 
   # predicted future position, orientation, etc..

@@ -28,6 +28,18 @@ function agnos_init {
 }
 
 function launch {
+  # IMX415 MIPI CSI single road camera only
+  export USE_WEBCAM=1
+  export NO_DM=1
+  export USE_V4L2_NV12=1  # Direct V4L2 NV12 capture (zero-copy, ~3ms faster than OpenCV BGR conversion)
+
+  # Auto-detect rkisp_mainpath video index and fall back to 11.
+  _rkisp_dev=$(for f in /sys/class/video4linux/video*/name; do
+    grep -q "rkisp_mainpath" "$f" 2>/dev/null && echo "$f" | grep -o '[0-9]*$' && break
+  done)
+  export ROAD_CAM="${_rkisp_dev:-11}"
+  echo "[launch] IMX415 detected at /dev/video${ROAD_CAM}"
+
   # Remove orphaned git lock if it exists on boot
   [ -f "$DIR/.git/index.lock" ] && rm -f $DIR/.git/index.lock
 
