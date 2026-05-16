@@ -215,7 +215,6 @@ class CameraMJPG:
         except ValueError:
             pass
 
-        self.camera_id = camera_id
         self.cap = cv2.VideoCapture(camera_id)
         if not self.cap.isOpened():
             raise IOError(f"无法打开摄像头设备 {camera_id}")
@@ -269,12 +268,8 @@ class CameraMJPG:
                 self.cap.release()
                 while retries < reconnect_retries:
                     time.sleep(reconnect_delay)
-                    self.cap = cv2.VideoCapture(self.camera_id)
+                    self.cap = cv2.VideoCapture(self.cam_type_state)
                     if self.cap.isOpened():
-                        self._configure_camera_format("MJPG")
-                        self.current_format = self._get_current_format()
-                        self.W = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-                        self.H = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
                         print(f"[CameraMJPG] Reconnected camera after {retries+1} attempt(s)")
                         retries = 0
                         break
@@ -395,15 +390,27 @@ class CameraV4L2NV12:
                 pass
             self._fd = None
 
-    def read_frames(self):
+    def read_frames(self, reconnect_retries=5, reconnect_delay=0.5):
+        timeout_count = 0
         while True:
             if self._fd is None:
                 raise RuntimeError("V4L2 device closed")
 
             ready, _, _ = select.select([self._fd], [], [], 1.0)
             if not ready:
+                timeout_count += 1
+                if timeout_count > 2:
+                    print("[CameraV4L2NV12] Timeout reading frame, attempting reconnect...")
+                    try:
+                        self.reconnect(reconnect_retries, reconnect_delay)
+                        timeout_count = 0
+                        continue
+                    except Exception as e:
+                        print(f"[CameraV4L2NV12] Reconnect failed: {e}")
+                        raise
                 continue
 
+            timeout_count = 0
             buf = _v4l2_buffer()
             buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE
             buf.memory = V4L2_MEMORY_MMAP
@@ -412,10 +419,19 @@ class CameraV4L2NV12:
             except OSError as e:
                 if e.errno in (errno.EAGAIN, errno.EINTR):
                     continue
-                raise
+                print(f"[CameraV4L2NV12] OSError {e.errno} during DQBUF, attempting reconnect...")
+                try:
+                    self.reconnect(reconnect_retries, reconnect_delay)
+                    continue
+                except Exception as re:
+                    print(f"[CameraV4L2NV12] Reconnect failed: {re}")
+                    raise
 
             data = self._maps[buf.index][:buf.bytesused]
-            _xioctl(self._fd, VIDIOC_QBUF, buf)
+            try:
+                _xioctl(self._fd, VIDIOC_QBUF, buf)
+            except OSError:
+                pass
             yield bytes(data)
 
     def reconnect(self, retries=5, delay=0.4):
