@@ -28,14 +28,20 @@ class Priority:
 
 
 def set_core_affinity(cores: list[int]) -> None:
-  if not PC:
-    os.sched_setaffinity(0, cores)
+  if not PC or os.path.exists('/dev/rknpu0') or os.path.exists('/dev/rknpu'):
+    try:
+      os.sched_setaffinity(0, cores)
+    except Exception:
+      pass
 
 
 def config_realtime_process(cores: int | list[int], priority: int) -> None:
   gc.disable()
-  if not PC:
-    os.sched_setscheduler(0, os.SCHED_FIFO, os.sched_param(priority))
+  if not PC or os.path.exists('/dev/rknpu0') or os.path.exists('/dev/rknpu'):
+    try:
+      os.sched_setscheduler(0, os.SCHED_FIFO, os.sched_param(priority))
+    except Exception:
+      pass
   c = cores if isinstance(cores, list) else [cores, ]
   set_core_affinity(c)
 
