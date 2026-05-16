@@ -11,3 +11,6 @@ if [ -z "$AGNOS_VERSION" ]; then
 fi
 
 export STAGING_ROOT="/data/safe_staging"
+
+# Orange Pi 5 / PC setup: Fallback for no hardware IMU
+export NO_IMU=1
